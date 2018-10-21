@@ -27,6 +27,7 @@
 #include "aes.h"
 #include "sha1.h"
 #include "common.h"
+#include "aes_omac.h"
 
 static struct id2name_tbl t_key2file[] = {
         {KEY_LV0, "lv0"},

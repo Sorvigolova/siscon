@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "sha2.h"
+
 
 
 
@@ -25,7 +25,7 @@ main (int argc, char *argv[])
   size_t len;
 
   u8 *data;
-  u8 sys_key[0x10], sys_iv[0x10];
+  u8 sys_key[0x10], sys_iv[0x10], sys_cmac[0x10];
   u8 digest[0x10];
 
   if (argc != 3)
@@ -49,12 +49,15 @@ main (int argc, char *argv[])
     fail ("unable to load sys-key.");
   if(key_get_simple("sys-iv", sys_iv, 0x10) < 0)
     fail ("unable to load sys-iv.");
+  if(key_get_simple("sys-cmac", sys_cmac, 0x10) < 0)
+    fail ("unable to load sys-cmac.");
 
   aes128cbc (sys_key, sys_iv, data, len, data);
-  //sha2 (data + 32, len - 32, digest, 0);
+  //aesOmac1Mode(u8* output, u8* input, int len, u8* aes_key_data, int aes_key_bits)
+  aesOmac1Mode (digest, data + 16, len - 16, sys_cmac, 128);
 
-  /*if (memcmp (data, digest, 0x20) != 0)
-    fail ("SHA2 mac mismatch");*/
+  if (memcmp (data, digest, 0x10) != 0)
+    fail ("OMAC1 mac mismatch");
 
   memcpy_to_file (argv[2], data, len);
 
